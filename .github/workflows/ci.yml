@@ -1,0 +1,31 @@
+name: TacoExpress CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Build (simulado)
+        run: echo "Compilación simulada del proyecto TacoExpress"
+
+      - name: Pruebas (simuladas)
+        run: echo "Ejecutando pruebas unitarias simuladas"
+
+      - name: Análisis estático (simulado)
+        run: echo "Revisión de código y buenas prácticas simulada"
+
+      - name: Reporte
+        run: echo "Pipeline ejecutado correctamente"
