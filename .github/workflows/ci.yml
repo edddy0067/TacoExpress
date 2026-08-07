@@ -1,0 +1,180 @@
+name: TacoExpress CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+
+  # =========================================================
+  # CI + CONSTRUCCIÓN/PUBLICACIÓN DE IMAGEN
+  # =========================================================
+  build-android:
+    name: Compilar, validar y publicar Docker
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Descargar código
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      # 2. Instalar Java requerido por Android
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # 3. Instalar .NET 9
+      - name: Instalar .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      # 4. Mostrar información del SDK
+      - name: Mostrar información de .NET
+        run: dotnet --info
+
+      # 5. Instalar workload MAUI Android
+      - name: Instalar workload MAUI Android
+        run: dotnet workload install maui-android
+
+      # 6. Restaurar dependencias
+      - name: Restaurar dependencias
+        run: >
+          dotnet restore
+          TacoExpress/MauiApp8/MauiApp8.csproj
+          -p:TargetFramework=net9.0-android
+
+      # 7. Análisis estático
+      - name: Análisis estático
+        run: >
+          dotnet format
+          TacoExpress/MauiApp8/MauiApp8.csproj
+          --verify-no-changes
+          --no-restore
+
+      # 8. Compilar aplicación Android
+      - name: Compilar aplicación Android
+        run: >
+          dotnet build
+          TacoExpress/MauiApp8/MauiApp8.csproj
+          --configuration Release
+          --framework net9.0-android
+          --no-restore
+
+      # 9. Buscar y ejecutar pruebas
+      - name: Buscar y ejecutar pruebas
+        shell: bash
+        run: |
+          TEST_PROJECTS=$(find TacoExpress \
+            \( -name "*Tests.csproj" -o -name "*Test.csproj" \) \
+            -not -path "*/bin/*" \
+            -not -path "*/obj/*")
+
+          if [ -z "$TEST_PROJECTS" ]; then
+            echo "No se encontraron proyectos de pruebas."
+            echo "El pipeline continúa, pero se recomienda agregar pruebas unitarias."
+          else
+            for project in $TEST_PROJECTS; do
+              echo "Ejecutando pruebas de: $project"
+
+              dotnet test "$project" \
+                --configuration Release \
+                --verbosity normal
+            done
+          fi
+
+      # =====================================================
+      # CD - DOCKER
+      # =====================================================
+
+      # 10. Construir imagen Docker
+      - name: Construir imagen Docker
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/tacoexpress:${{ github.sha }} \
+            .
+
+      # 11. Login en Docker Hub
+      # Los secrets no se utilizan en Pull Requests.
+      - name: Login en Docker Hub
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # 12. Subir imagen a Docker Hub
+      - name: Subir imagen a Docker Hub
+        if: github.event_name == 'push'
+        run: |
+          docker push \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:${{ github.sha }}
+
+      # 13. Crear también tag latest cuando sea main
+      - name: Publicar tag latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker tag \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:${{ github.sha }} \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:latest
+
+          docker push \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:latest
+
+
+  # =========================================================
+  # DEPLOY A STAGING
+  # =========================================================
+  deploy-staging:
+    name: Deploy a Staging
+
+    # Espera a que CI + Docker terminen correctamente
+    needs: build-android
+
+    runs-on: ubuntu-latest
+
+    # REQUISITO DE LA TAREA:
+    # únicamente desplegar desde un push a main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+
+      # 14. Login para descargar la imagen publicada
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # 15. Descargar imagen exacta generada por este pipeline
+      - name: Descargar imagen de staging
+        run: |
+          docker pull \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:${{ github.sha }}
+
+      # 16. Ejecutar deploy de staging
+      - name: Ejecutar deploy a staging
+        run: |
+          echo "=========================================="
+          echo "INICIANDO DEPLOY A STAGING"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "=========================================="
+
+          docker run --rm \
+            ${{ secrets.DOCKER_USERNAME }}/tacoexpress:${{ github.sha }}
+
+          echo "=========================================="
+          echo "DEPLOY A STAGING COMPLETADO"
+          echo "=========================================="

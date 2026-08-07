@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MauiApp8.Views.LoginPage"
+    Title="Iniciar Sesión">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="20"
+            VerticalOptions="Center">
+
+            <!-- Logo -->
+
+            <Label
+                Text="🌮"
+                FontSize="70"
+                HorizontalOptions="Center"/>
+
+            <Label
+                Text="TacoExpress"
+                FontSize="30"
+                FontAttributes="Bold"
+                HorizontalOptions="Center"/>
+
+            <Label
+                Text="Bienvenido"
+                FontSize="18"
+                HorizontalOptions="Center"/>
+
+            <!-- Usuario -->
+
+            <Label
+                Text="Usuario"/>
+
+            <Entry
+                Placeholder="Ingrese su usuario"
+                Text="{Binding Username}"
+                Keyboard="Email"/>
+
+            <!-- Contraseña -->
+
+            <Label
+                Text="Contraseña"/>
+
+            <Entry
+                Placeholder="Ingrese su contraseña"
+                Text="{Binding Password}"
+                IsPassword="True"/>
+
+            <!-- Botón -->
+
+            <Button
+                Text="Iniciar Sesión"
+                HeightRequest="50"
+                Command="{Binding LoginCommand}"/>
+
+            <!-- Estado -->
+
+            <Label
+                x:Name="lblEstado"
+                Text="No has iniciado sesión"
+                HorizontalOptions="Center"/>
+
+            <!-- Versión -->
+
+            <Label
+                Text="Versión 1.0"
+                FontSize="12"
+                HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>
