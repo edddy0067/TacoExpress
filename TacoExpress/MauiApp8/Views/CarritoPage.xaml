@@ -1,9 +1,86 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MauiApp8.Views.CarritoPage"
-             Title="CarritoPage">
-    <VerticalStackLayout>
-        
-    </VerticalStackLayout>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MauiApp8.Views.CarritoPage"
+    x:Name="CarritoPageRoot"
+    Title="Carrito">
+
+    <Grid
+        Padding="20"
+        RowDefinitions="Auto,*,Auto,Auto"
+        RowSpacing="15">
+
+        <Label
+            Grid.Row="0"
+            Text="Mi carrito"
+            FontSize="28"
+            FontAttributes="Bold"/>
+
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Productos}"
+            EmptyView="No hay productos en el carrito.">
+
+            <CollectionView.ItemTemplate>
+
+                <DataTemplate>
+
+                    <Border
+                        StrokeThickness="1"
+                        Padding="15"
+                        Margin="0,5">
+
+                        <Grid
+                            ColumnDefinitions="*,Auto"
+                            RowDefinitions="Auto,Auto">
+
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Text="{Binding Nombre}"
+                                FontSize="18"
+                                FontAttributes="Bold"/>
+
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Text="{Binding Precio, StringFormat='${0:F2}'}"
+                                FontSize="16"/>
+
+                            <Button
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Text="Eliminar"
+                                VerticalOptions="Center"
+                                Command="{Binding BindingContext.EliminarProductoCommand,
+                                          Source={x:Reference CarritoPageRoot}}"
+                                CommandParameter="{Binding .}"/>
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <Label
+            Grid.Row="2"
+            Text="{Binding Total, StringFormat='Total: ${0:F2}'}"
+            FontSize="22"
+            FontAttributes="Bold"
+            HorizontalOptions="End"/>
+
+        <Button
+            Grid.Row="3"
+            Text="Continuar con pedido"
+            Command="{Binding IrAPedidoCommand}"/>
+
+    </Grid>
+
 </ContentPage>
