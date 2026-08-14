@@ -1,9 +1,88 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MauiApp8.Views.PedidoPage"
-             Title="PedidoPage">
-    <VerticalStackLayout>
-        
-    </VerticalStackLayout>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MauiApp8.Views.PedidoPage"
+    Title="Pedido">
+
+    <Grid
+        Padding="20"
+        RowDefinitions="Auto,*,Auto,Auto,Auto"
+        RowSpacing="15">
+
+        <Label
+            Grid.Row="0"
+            Text="Resumen del pedido"
+            FontSize="28"
+            FontAttributes="Bold"/>
+
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Productos}">
+
+            <CollectionView.ItemTemplate>
+
+                <DataTemplate>
+
+                    <Border
+                        StrokeThickness="1"
+                        Padding="12"
+                        Margin="0,5">
+
+                        <Grid
+                            ColumnDefinitions="*,Auto">
+
+                            <Label
+                                Grid.Column="0"
+                                Text="{Binding Nombre}"
+                                FontSize="18"/>
+
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding Precio, StringFormat='${0:F2}'}"
+                                FontSize="18"
+                                FontAttributes="Bold"/>
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <Label
+            Grid.Row="2"
+            Text="{Binding Total, StringFormat='Total del pedido: ${0:F2}'}"
+            FontSize="22"
+            FontAttributes="Bold"
+            HorizontalOptions="End"/>
+
+        <Button
+            Grid.Row="3"
+            Text="Confirmar pedido"
+            Command="{Binding ConfirmarPedidoCommand}"/>
+
+        <VerticalStackLayout
+            Grid.Row="4"
+            IsVisible="{Binding PedidoConfirmado}"
+            Spacing="5"
+            HorizontalOptions="Center">
+
+            <Label
+                Text="Pedido generado correctamente"
+                FontSize="20"
+                FontAttributes="Bold"/>
+
+            <Label
+                Text="{Binding NumeroPedido, StringFormat='Número de pedido: {0}'}"
+                FontSize="16"/>
+
+        </VerticalStackLayout>
+
+    </Grid>
+
 </ContentPage>

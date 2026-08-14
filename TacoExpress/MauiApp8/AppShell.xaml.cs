@@ -11,6 +11,8 @@ namespace MauiApp8
             Routing.RegisterRoute(nameof(MenuPage), typeof(MenuPage));
             Routing.RegisterRoute(nameof(CarritoPage), typeof(CarritoPage));
             Routing.RegisterRoute(nameof(PedidoPage), typeof(PedidoPage));
+            Routing.RegisterRoute(nameof(CarritoPage), typeof(CarritoPage));
+            Routing.RegisterRoute(nameof(PedidoPage), typeof(PedidoPage));
         }
     }
 }
